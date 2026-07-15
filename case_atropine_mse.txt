@@ -1,0 +1,31 @@
+======================================================================
+CASE STUDY | drug_index = 199 | checkpoint = checkpoint_mse_rank04/checkpoints/fold0_last.pt
+SMILES: CN1C2CCC1CC(C2)OC(=O)C(CO)C3=CC=CC=C3
+So SE that (label>0): 27/994
+======================================================================
+
+--- Top 15 SE du doan tan suat cao nhat ---
+rank | SE_id | pred  | true
+   1 |    64 | 3.834 | 0
+   2 |   978 | 3.495 | 0
+   3 |    62 | 3.299 | 0
+   4 |    60 | 3.269 | 0
+   5 |   720 | 3.154 | 0
+   6 |   621 | 3.104 | 0
+   7 |   631 | 3.023 | 0
+   8 |    61 | 3.008 | 0
+   9 |   683 | 2.872 | 0
+  10 |   506 | 2.867 | 0
+  11 |   688 | 2.665 | 0
+  12 |     1 | 2.648 | 2
+  13 |     2 | 2.572 | 0
+  14 |    11 | 2.511 | 0
+  15 |   838 | 2.467 | 0
+
+Trong top-15: 1/15 la SE that (label>0)
+
+Precision@10: 0.000
+Precision@20: 0.150
+Precision@50: 0.220
+
+SCC (positive-only) cho thuoc nay: 0.302

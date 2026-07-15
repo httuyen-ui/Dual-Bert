@@ -1,0 +1,17 @@
+﻿# Model weights & checkpoints
+*.pt
+*.pth
+*.ckpt
+*.h5
+checkpoint_mse_rank04/
+
+# Data
+data/
+*.npy
+
+# Python
+__pycache__/
+*.pyc
+
+# Env
+.env
