@@ -1,3 +1,33 @@
+# -*- coding: utf-8 -*-
+"""
+main_clean.py — cau hinh dung cho MOI ket qua bao cao trong bai bao ICTA 2026
+"Dual-BERT for Drug Side-Effect Frequency Prediction".
+
+Muc tieu huan luyen: MSE + pairwise ranking loss, lambda = 0.4 co dinh, margin = 0.1.
+Cac default duoi day DA duoc dat dung bang cau hinh da chay, nen chay khong tham so
+se tai lap dung so trong Bang 1 va Bang 3:
+
+    python main_clean.py
+
+Cac tuy chon khac co trong ma nguon deu TAT trong moi ket qua bao cao:
+    loss_type = mse          -> khong dung Huber
+    rank_gap_q = 0.0         -> khong chon cap theo khoang cach label
+    hard_pair_topk_ratio = 1.0, hard_pair_factor = 1  -> khong khai thac cap kho
+    topk_loss_weight = 0.0   -> khong toi uu top-k
+    top_focus_weight = 1.0   -> khong danh trong so theo nhan cao
+    pred_sharp_scale = 1.0, pred_sharp_tanh = False   -> khong lam sac du doan
+    error_focus_q = 0.0      -> khong danh trong so theo loi
+    focus_schedule = none    -> khong co lich trinh thay doi trong so
+    rank_norm_batch = False
+
+Sieu tham so: Adam, lr = 5e-5, batch_size = 64, 40 epoch, weight_decay = 0.01.
+SEED = 1 (random, numpy, torch). Tong tham so: 49.479.177.
+
+Ghi chu: mot phien ban truoc cua file nay dat default khac (loss_type=mix,
+topk_loss_weight=0.2, pred_sharp_scale=1.5, top_focus_weight=3.0, rank_gap_q=0.5,
+hard_pair_topk_ratio=0.3, hard_pair_factor=4, lr=1e-4, batch_size=32, epoch=200).
+Cau hinh do KHONG sinh ra bat ky so nao trong bai; xem main_earlier_config.py.
+"""
 import argparse
 import os
 import pickle
@@ -1040,9 +1070,9 @@ if __name__ == '__main__':
     # Tham số dòng lệnh
     parser = argparse.ArgumentParser(description='train model')
     parser.add_argument('--model', type=int, required=False, default=0)
-    parser.add_argument('--lr', type=float, required=False, default=1e-4, help='Learning rate')
+    parser.add_argument('--lr', type=float, required=False, default=5e-5, help='Learning rate')
     parser.add_argument('--wd', type=float, required=False, default=0.01, help='weight_decay')
-    parser.add_argument('--epoch', type=int, required=False, default=200, help='Number of epoch')
+    parser.add_argument('--epoch', type=int, required=False, default=40, help='Number of epoch')
     parser.add_argument('--log_interval', type=int, required=False, default=0,
                         help='Print batch MSE every N batches (0 = only epoch summary)')
     parser.add_argument(
@@ -1104,7 +1134,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--loss_type',
         type=str,
-        default='mix',
+        default='mse',
         choices=['mse', 'huber', 'mix'],
         help='Loss hồi quy: mse, huber hoặc mix (0.5 mse + 0.5 huber).',
     )
@@ -1123,7 +1153,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--top_focus_weight',
         type=float,
-        default=3.0,
+        default=1.0,
         help='Trọng số cho nhóm top label trong batch.',
     )
     parser.add_argument(
@@ -1161,25 +1191,25 @@ if __name__ == '__main__':
     parser.add_argument(
         '--rank_gap_q',
         type=float,
-        default=0.5,
+        default=0.0,
         help='Ranking: giữ cặp li>lj có (li-lj)>=phân vị q hoặc cặp sai thứ tự (pred chưa margin). 0=tắt. Thử 0.5.',
     )
     parser.add_argument(
         '--hard_pair_factor',
         type=int,
-        default=4,
+        default=1,
         help='Hệ số lấy thêm cặp ranking trước khi chọn hard pairs.',
     )
     parser.add_argument(
         '--hard_pair_topk_ratio',
         type=float,
-        default=0.3,
+        default=1.0,
         help='Tỉ lệ hard pairs có loss cao nhất dùng để tính ranking loss.',
     )
     parser.add_argument(
         '--topk_loss_weight',
         type=float,
-        default=0.2,
+        default=0.0,
         help='Top-k overlap trong batch: loss += weight * (1 - |topk(pred) ∩ topk(label)|/k). 0=tắt; thử 0.3.',
     )
     parser.add_argument(
@@ -1197,7 +1227,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--pred_sharp_scale',
         type=float,
-        default=1.5,
+        default=1.0,
         help='Nhân pred trước ranking + top-k loss (1.0=tắt). Thử 1.5.',
     )
     parser.add_argument(
@@ -1250,7 +1280,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--batch_size',
         type=int,
-        default=32,
+        default=64,
         help='Kích thước batch.',
     )
     parser.add_argument(
